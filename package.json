@@ -1,0 +1,27 @@
+{
+  "name": "poc_api_with_mysql",
+  "version": "1.0.0",
+  "description": "poc api",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start:dev": "NODE_ENV=dev nodemon src/index.js",
+    "start:prod": "NODE_ENV=prod node src/index.js"
+  },
+  "author": "Kazeem",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-validator": "^7.2.0",
+    "ip": "^2.0.1",
+    "mysql2": "^3.11.3",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
