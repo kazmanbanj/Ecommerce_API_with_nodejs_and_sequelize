@@ -5,6 +5,7 @@ const { check } = require('express-validator');
 const productRoutes = express.Router();
 
 productRoutes.get('/products', productController.getProducts);
+productRoutes.get('/products/:productId', productController.getProduct);
 productRoutes.post(
     '/add-product',
     [

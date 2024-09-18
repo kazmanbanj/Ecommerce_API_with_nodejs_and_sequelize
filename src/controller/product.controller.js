@@ -7,6 +7,42 @@ const { validationResult } = require('express-validator');
 const paginateModel = require('../util/pagination');
 
 
+exports.createProduct = (req, res, next) => {
+    logger.info(`${req.method} ${req.originalUrl}, creating product...`);
+    const errors = validationResult(req);
+    const { title, imageUrl, price, description } = req.body;
+
+    if (!errors.isEmpty()) {
+        logger.error(errors);
+        return res.status(HttpStatus.VALIDATION_FAILED.code)
+            .send(new Response(
+                HttpStatus.VALIDATION_FAILED.code,
+                'Validation failed, entered data is incorrect',
+                [],
+                errors.array().map(err => ({
+                    field: err.param,
+                    message: err.msg,
+                }))
+            )
+        );
+    }
+
+    Product.create({title, imageUrl, price, description})
+    .then(result => {
+        logger.info(result);
+        res.status(HttpStatus.CREATED.code)
+            .send(new Response(
+                HttpStatus.CREATED.code,
+                `Product created`,
+                result
+            )
+        );
+    })
+    .catch(err => {
+        logger.error(err.message);
+    });
+};
+
 exports.getProducts = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const paginate = req.query.paginate || 'false';
@@ -63,41 +99,42 @@ exports.getProducts = async (req, res, next) => {
     }
 };
 
-exports.createProduct = (req, res, next) => {
-    logger.info(`${req.method} ${req.originalUrl}, creating product...`);
-    const errors = validationResult(req);
-    const { title, imageUrl, price, description } = req.body;
 
-    if (!errors.isEmpty()) {
-        logger.error(errors);
-        return res.status(HttpStatus.VALIDATION_FAILED.code)
-            .send(new Response(
-                HttpStatus.VALIDATION_FAILED.code,
-                'Validation failed, entered data is incorrect',
-                [],
-                errors.array().map(err => ({
-                    field: err.param,
-                    message: err.msg,
-                }))
-            )
-        );
-    }
+exports.getProduct = async (req, res, next) => {
+    logger.info(`${req.method} ${req.originalUrl}, fetching product...`);
 
-    Product.create({title, imageUrl, price, description})
-    .then(result => {
-        logger.info(result);
-        res.status(HttpStatus.CREATED.code)
-            .send(new Response(
-                HttpStatus.CREATED.code,
-                `Product created`,
-                result
-            )
-        );
-    })
-    .catch(err => {
+    try {
+        const productId = req.params.productId;
+        const product = await Product.findOne({ where: { id: productId } });
+        if (!product) {
+            res.status(HttpStatus.NOT_FOUND.code)
+                .send(new Response(
+                    HttpStatus.NOT_FOUND.code,
+                    `Product by id ${productId} was not found`
+                )
+            );
+        } else {
+            res.status(HttpStatus.OK.code)
+                .send(new Response(
+                    HttpStatus.OK.code,
+                    `Product retrieved`,
+                    product
+                )
+            );
+        }
+    } catch (err) {
+
         logger.error(err.message);
-    });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR.code)
+            .send(new Response(
+                HttpStatus.INTERNAL_SERVER_ERROR.code,
+                `Error occurred`
+            )
+        );
+        next(err);
+    };
 };
+
 
 
 
@@ -110,7 +147,6 @@ exports.createProduct = (req, res, next) => {
 //             res.status(HttpStatus.OK.code)
 //                 .send(new Response(
 //                     HttpStatus.OK.code,
-//                     HttpStatus.OK.status,
 //                     `No patients found`
 //                 )
 //             );
@@ -118,7 +154,6 @@ exports.createProduct = (req, res, next) => {
 //             res.status(HttpStatus.OK.code)
 //                 .send(new Response(
 //                     HttpStatus.OK.code,
-//                     HttpStatus.OK.status,
 //                     `Patients retrieved`,
 //                     {
 //                         patients: results
@@ -140,7 +175,6 @@ exports.createProduct = (req, res, next) => {
 //             res.status(HttpStatus.NOT_FOUND.code)
 //                 .send(new Response(
 //                     HttpStatus.NOT_FOUND.code,
-//                     HttpStatus.NOT_FOUND.status,
 //                     `Patient by id ${req.params.id} was not found`
 //                 )
 //             );
@@ -148,7 +182,6 @@ exports.createProduct = (req, res, next) => {
 //             res.status(HttpStatus.OK.code)
 //                 .send(new Response(
 //                     HttpStatus.OK.code,
-//                     HttpStatus.OK.status,
 //                     `Patient retrieved`,
 //                     results[0]
 //                 )
@@ -165,7 +198,6 @@ exports.createProduct = (req, res, next) => {
 //             res.status(HttpStatus.NOT_FOUND.code)
 //                 .send(new Response(
 //                     HttpStatus.NOT_FOUND.code,
-//                     HttpStatus.NOT_FOUND.status,
 //                     `Patient by id ${req.params.id} was not found`
 //                 )
 //             );
@@ -177,7 +209,6 @@ exports.createProduct = (req, res, next) => {
 //                     res.status(HttpStatus.OK.code)
 //                     .send(new Response(
 //                         HttpStatus.OK.code,
-//                         HttpStatus.OK.status,
 //                         `Patient updated`,
 //                         {
 //                             id: req.params.id,
@@ -189,7 +220,7 @@ exports.createProduct = (req, res, next) => {
 //                     res.status(HttpStatus.INTERNAL_SERVER_ERROR.code)
 //                     .send(new Response(
 //                         HttpStatus.INTERNAL_SERVER_ERROR.code,
-//                         HttpStatus.INTERNAL_SERVER_ERROR.status,
+//                         HttpStatus.INTERNAL_SERVER_ERROR
 //                         `Error occurred`
 //                     )
 //                 );
@@ -207,7 +238,6 @@ exports.createProduct = (req, res, next) => {
 //             res.status(HttpStatus.OK.code)
 //                 .send(new Response(
 //                     HttpStatus.OK.code,
-//                     HttpStatus.OK.status,
 //                     `Patient deleted`,
 //                     results[0]
 //                 )
@@ -216,7 +246,7 @@ exports.createProduct = (req, res, next) => {
 //             res.status(HttpStatus.NOT_FOUND.code)
 //                 .send(new Response(
 //                     HttpStatus.NOT_FOUND.code,
-//                     HttpStatus.NOT_FOUND.status,
+//                     HttpStatus.NOT_FOUND
 //                     `Patient by id ${req.params.id} was not found`
 //                 )
 //             );
