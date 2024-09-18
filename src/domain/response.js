@@ -1,11 +1,11 @@
 class Response {
-    constructor(statusCode, httpStatus, message, data) {
+    constructor(statusCode, message, data, error) {
         this.timeStamp = new Date().toLocaleString();
         this.statusCode = statusCode;
-        this.httpStatus = httpStatus;
         this.message = message;
-        this.data = data;
+        this.data = data ?? [];
+        this.error = error ?? [];
     }
 }
 
-export default Response;
+module.exports = Response;
