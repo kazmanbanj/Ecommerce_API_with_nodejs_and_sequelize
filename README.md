@@ -1,1 +1,1 @@
-# Patients_API_with_nodejs
+# Ecommerce_API_with_nodejs_and_sequelize
