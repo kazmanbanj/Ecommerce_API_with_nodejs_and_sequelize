@@ -2,12 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import ResponseModel from '../domain/response';
 import logger from '../util/logger';
 import User from '../models/user';
+import Product from '../models/product';
 import HttpStatus from '../util/http-status';
 import { validationResult } from 'express-validator';
 import paginateModel from '../util/pagination';
 import { errorsForRequest } from '../util/errors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+
+User.associate({ Product });
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
     logger.info(`${req.method} ${req.originalUrl}, creating user...`);

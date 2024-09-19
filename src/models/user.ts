@@ -27,6 +27,14 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 
+    // Define associations
+    public static associate(models: any) {
+        User.hasMany(models.Product, {
+            foreignKey: 'userId',
+            as: 'products',  // Alias for the association
+        });
+    }
+
     public toJSON(): Partial<UserAttributes> {
         const values = { ...this.get() }; // Get all instance values
         delete values.password; // Remove the password field

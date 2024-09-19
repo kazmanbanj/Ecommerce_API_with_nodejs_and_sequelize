@@ -9,6 +9,7 @@ interface ProductAttributes {
     price: number;
     imageUrl: string;
     description: string;
+    userId: number;
 }
 
 // Define the creation attributes (without 'id')
@@ -20,10 +21,21 @@ class Product extends Model<ProductAttributes, ProductCreationAttributes> implem
     public price!: number;
     public imageUrl!: string;
     public description!: string;
+    public userId!: number;
 
     // timestamps
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
+
+    // Define association with User
+    public static associate(models: any) {
+        Product.belongsTo(models.User, {
+            foreignKey: 'userId',
+            constraints: true,
+            onDelete: 'CASCADE',
+            as: 'user',  // Alias for the association
+        });
+    }
 }
 
 // Initialize the Product model
@@ -50,6 +62,10 @@ Product.init(
         description: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        userId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
         },
     },
     {
