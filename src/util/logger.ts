@@ -7,7 +7,7 @@ const log = logger({
     transport: {
         target: 'pino-pretty',
         options: {
-            colorized: true
+            colorize: true
         }
     },
     timestamp: () => `,"time": "${new Date().toLocaleString()}"`
