@@ -1,106 +1,92 @@
-const database = require('../config/mysql.config');
-const Response = require('../domain/response');
-const logger = require('../util/logger');
-const Product = require('../models/product');
-const HttpStatus = require('../util/http-status');
-const { validationResult } = require('express-validator');
-const paginateModel = require('../util/pagination');
+import { Request, Response, NextFunction } from 'express';
+import ResponseModel from '../domain/response';
+import logger from '../util/logger';
+import Product from '../models/product';
+import HttpStatus from '../util/http-status';
+import { validationResult } from 'express-validator';
+import paginateModel from '../util/pagination';
+import { errorsForRequest } from '../util/errors';
 
-
-exports.createProduct = (req, res, next) => {
+export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
     logger.info(`${req.method} ${req.originalUrl}, creating product...`);
     const errors = validationResult(req);
+
     const { title, imageUrl, price, description } = req.body;
 
     if (!errors.isEmpty()) {
         logger.error(errors);
-        return res.status(HttpStatus.VALIDATION_FAILED.code)
-            .send(new Response(
-                HttpStatus.VALIDATION_FAILED.code,
-                'Validation failed, entered data is incorrect',
-                [],
-                errors.array().map(err => ({
-                    field: err.param,
-                    message: err.msg,
-                }))
-            )
-        );
+        return errorsForRequest(res, errors);
     }
 
-    Product.create({title, imageUrl, price, description})
-    .then(result => {
+    try {
+        const result = await Product.create({ title, imageUrl, price, description });
         logger.info(result);
         res.status(HttpStatus.CREATED.code)
-            .send(new Response(
+            .send(new ResponseModel(
                 HttpStatus.CREATED.code,
                 `Product created`,
                 result
-            )
-        );
-    })
-    .catch(err => {
-        logger.error(err.message);
-    });
+            ));
+    } catch (err) {
+        logger.error(err);
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR.code)
+        .send(new ResponseModel(
+            HttpStatus.INTERNAL_SERVER_ERROR.code,
+            `Error occurred`
+        ));
+        next(err);
+    }
 };
 
-exports.getProducts = async (req, res, next) => {
-    const page = parseInt(req.query.page) || 1;
+// const userWithPosts = await User.findByPk(user.id, { include: [Post] });
+export const getProducts = async (req: Request, res: Response, next: NextFunction) => {
+    const page = parseInt(req.query.page as string) || 1;
     const paginate = req.query.paginate || 'false';
-    const limit = parseInt(req.query.limit) || 2;
+    const limit = parseInt(req.query.limit as string) || 2;
 
     if (paginate === 'true') {
         try {
             const posts = await paginateModel(Product, page, limit, req.originalUrl);
             res.status(HttpStatus.OK.code)
-                .send(new Response(
+                .send(new ResponseModel(
                     HttpStatus.OK.code,
                     `Posts retrieved`,
                     {
                         data: posts.data,
-                        meta: posts.pagination
+                        meta: posts.pagination,
                     }
-                )
-            );
+                ));
         } catch (err) {
-            logger.error(err.message);
-
+            logger.error(err);
             res.status(HttpStatus.INTERNAL_SERVER_ERROR.code)
-                .send(new Response(
+                .send(new ResponseModel(
                     HttpStatus.INTERNAL_SERVER_ERROR.code,
                     `Error occurred`
-                )
-            );
+                ));
             next(err);
         }
-
     } else {
-
-        Product.findAll()
-        .then(posts => {
+        try {
+            const posts = await Product.findAll();
             res.status(HttpStatus.OK.code)
-                .send(new Response(
+                .send(new ResponseModel(
                     HttpStatus.OK.code,
                     `Posts retrieved`,
                     posts
-                )
-            );
-        })
-        .catch(err => {
-            logger.error(err.message);
-
+                ));
+        } catch (err) {
+            logger.error(err);
             res.status(HttpStatus.INTERNAL_SERVER_ERROR.code)
-                .send(new Response(
+                .send(new ResponseModel(
                     HttpStatus.INTERNAL_SERVER_ERROR.code,
                     `Error occurred`
-                )
-            );
+                ));
             next(err);
-        });
+        }
     }
 };
 
-
-exports.getProduct = async (req, res, next) => {
+export const getProduct = async (req: Request, res: Response, next: NextFunction) => {
     logger.info(`${req.method} ${req.originalUrl}, fetching product...`);
 
     try {
@@ -108,37 +94,343 @@ exports.getProduct = async (req, res, next) => {
         const product = await Product.findOne({ where: { id: productId } });
         if (!product) {
             res.status(HttpStatus.NOT_FOUND.code)
-                .send(new Response(
+                .send(new ResponseModel(
                     HttpStatus.NOT_FOUND.code,
                     `Product by id ${productId} was not found`
-                )
-            );
+                ));
         } else {
             res.status(HttpStatus.OK.code)
-                .send(new Response(
+                .send(new ResponseModel(
                     HttpStatus.OK.code,
                     `Product retrieved`,
                     product
-                )
-            );
+                ));
         }
     } catch (err) {
-
-        logger.error(err.message);
+        logger.error(err);
         res.status(HttpStatus.INTERNAL_SERVER_ERROR.code)
-            .send(new Response(
+            .send(new ResponseModel(
                 HttpStatus.INTERNAL_SERVER_ERROR.code,
                 `Error occurred`
-            )
-        );
+            ));
         next(err);
-    };
+    }
+};
+
+export const editProduct = async (req: Request, res: Response, next: NextFunction) => {
+    logger.info(`${req.method} ${req.originalUrl}, updating product...`);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        logger.error(errors);
+        return errorsForRequest(res, errors);
+    }
+
+    const { title, imageUrl, price, description } = req.body;
+    try {
+        const productId = req.params.productId;
+        const product = await Product.findOne({ where: { id: productId } });
+        if (!product) {
+            res.status(HttpStatus.NOT_FOUND.code)
+                .send(new ResponseModel(
+                    HttpStatus.NOT_FOUND.code,
+                    `Product by id ${productId} was not found`
+                ));
+        } else {
+            product.update({ title, imageUrl, price, description });
+
+            res.status(HttpStatus.OK.code)
+                .send(new ResponseModel(
+                    HttpStatus.OK.code,
+                    `Product updated`,
+                    product
+                ));
+        }
+    } catch (err) {
+        logger.error(err);
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR.code)
+            .send(new ResponseModel(
+                HttpStatus.INTERNAL_SERVER_ERROR.code,
+                `Error occurred`
+            ));
+        next(err);
+    }
+};
+
+export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
+    logger.info(`${req.method} ${req.originalUrl}, deleting product...`);
+    try {
+        const productId = req.params.productId;
+        const product = await Product.findOne({ where: { id: productId } });
+        if (!product) {
+            res.status(HttpStatus.NOT_FOUND.code)
+                .send(new ResponseModel(
+                    HttpStatus.NOT_FOUND.code,
+                    `Product by id ${productId} was not found`
+                ));
+        } else {
+            await product.destroy();
+            res.status(HttpStatus.OK.code)
+                .send(new ResponseModel(
+                    HttpStatus.OK.code,
+                    `Product deleted`,
+                    product
+                ));
+        }
+    } catch (err) {
+        logger.error(err);
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR.code)
+            .send(new ResponseModel(
+                HttpStatus.INTERNAL_SERVER_ERROR.code,
+                `Error occurred`
+            ));
+        next(err);
+    }
 };
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// raw sql
 // export const getPatients = (req, res, next) => {
 //     logger.info(`${req.method} ${req.originalUrl}, fetching patients...`);
 

@@ -1,4 +1,9 @@
-const HttpStatus = {
+interface HttpStatusCode {
+    code: number;
+    status: string;
+}
+
+const HttpStatus: Record<string, HttpStatusCode> = {
     OK: {
         code: 200,
         status: 'OK'
@@ -15,6 +20,10 @@ const HttpStatus = {
         code: 400,
         status: 'BAD_REQUEST'
     },
+    UNAUTHORIZED: {
+        code: 401,
+        status: 'UNAUTHORIZED'
+    },
     NOT_FOUND: {
         code: 404,
         status: 'NOT_FOUND'
@@ -29,4 +38,4 @@ const HttpStatus = {
     },
 };
 
-module.exports = HttpStatus;
+export default HttpStatus;

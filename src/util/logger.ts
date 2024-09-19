@@ -1,4 +1,4 @@
-const logger = require('pino');
+import logger from 'pino';
 
 const log = logger({
     base: {
@@ -7,10 +7,10 @@ const log = logger({
     transport: {
         target: 'pino-pretty',
         options: {
-            colorized: true
+            colorize: true
         }
     },
     timestamp: () => `,"time": "${new Date().toLocaleString()}"`
 });
 
-module.exports = log;
+export default log;
