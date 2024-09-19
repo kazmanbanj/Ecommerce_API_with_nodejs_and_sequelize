@@ -100,7 +100,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 export const profile = async (req: Request, res: Response, next: NextFunction) => {
     logger.info(`${req.method} ${req.originalUrl}, fetching user profile...`);
     const userId = req.userId
-    logger.info('user iiid',userId);
 
     try {
         const user = await User.findOne({ where: { id: userId } });

@@ -2,6 +2,7 @@ import express from 'express';
 import { signup, login, profile } from '../controller/auth.controller';
 import { check, ValidationChain} from 'express-validator';
 import User from '../models/user';
+import authMiddleware from '../middleware/is-auth'
 
 const authRoutes = express.Router();
 
@@ -62,7 +63,7 @@ const loginValidation: ValidationChain[] = [
 
 authRoutes.post('/signup', signupValidation, signup);
 authRoutes.post('/login', loginValidation, login);
-authRoutes.post('/profile', profile);
+authRoutes.get('/profile', authMiddleware, profile);
 
 
 export default authRoutes;
