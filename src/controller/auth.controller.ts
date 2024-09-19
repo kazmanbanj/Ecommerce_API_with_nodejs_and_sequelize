@@ -96,3 +96,36 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         next(err);
     }
 };
+
+export const profile = async (req: Request, res: Response, next: NextFunction) => {
+    logger.info(`${req.method} ${req.originalUrl}, fetching user profile...`);
+    const userId = req.userId
+    logger.info('user iiid',userId);
+
+    try {
+        const user = await User.findOne({ where: { id: userId } });
+
+        if (!user) {
+            res.status(HttpStatus.NOT_FOUND.code)
+            .send(new ResponseModel(
+                HttpStatus.NOT_FOUND.code,
+                `User not found`
+            ));
+        } else {
+            res.status(HttpStatus.OK.code)
+            .send(new ResponseModel(
+                HttpStatus.OK.code,
+                `User retrieved successfully`,
+                user
+            ));
+        }
+    } catch (err) {
+        logger.error(err);
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR.code)
+        .send(new ResponseModel(
+            HttpStatus.INTERNAL_SERVER_ERROR.code,
+            `Error occurred`
+        ));
+        next(err);
+    }
+};

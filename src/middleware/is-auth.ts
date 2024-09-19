@@ -66,9 +66,8 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
             HttpStatus.UNAUTHORIZED.code,
             `Unauthorized`
         ));
-    } else {
-        req.userId = decodedToken.userId; // Now TypeScript knows userId exists
     }
+    req.userId = decodedToken.userId;
 
     next();
 };

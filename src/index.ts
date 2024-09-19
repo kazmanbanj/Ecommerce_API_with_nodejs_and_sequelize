@@ -54,19 +54,6 @@ User.hasMany(Product);
 sequelize
     // .sync({force: true})
     .sync()
-    // .then(result => {
-    //     return User.findByPk(1);
-    // })
-    // .then(user => {
-    //     if (!user) {
-    //         return User.create({name: 'John Doe', email: 'johndoe@email.com'});
-    //     }
-    //     return user;
-    // })
-    // .then(user => {
-        // console.log(user);
-    //     user.createCart();
-    // })
     .then(result => {
         // logger.info(result);
         app.listen(PORT, () => {
