@@ -1,5 +1,5 @@
 import express from 'express';
-import {getProducts, getProduct, createProduct, editProduct, deleteProduct } from '../controller/product.controller';
+import {getProducts, getProduct, createProduct, deleteProduct, editProduct } from '../controller/product.controller';
 import { check, ValidationChain } from 'express-validator';
 import authMiddleware from '../middleware/is-auth'
 
@@ -16,9 +16,9 @@ const productCreationValidation: ValidationChain[] = [
 ];
 
 productRoutes.get('/products', authMiddleware, getProducts);
-productRoutes.get('/products/:productId', authMiddleware, getProduct);
-productRoutes.put('/products/:productId', authMiddleware, productCreationValidation, editProduct);
+productRoutes.get('/products/:id', authMiddleware, getProduct);
+productRoutes.put('/products/:id', authMiddleware, productCreationValidation, editProduct);
 productRoutes.post('/products', authMiddleware, productCreationValidation, createProduct);
-productRoutes.delete('/products/:productId', authMiddleware, deleteProduct);
+productRoutes.delete('/products/:id', authMiddleware, deleteProduct);
 
 export default productRoutes;

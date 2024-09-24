@@ -1,54 +1,4 @@
-
-// const paginateModel = async (model, page = 1, limit = 10, endpoint = '') => {
-//     const currentPageUrl = endpoint;
-//     endpoint = removeAfterCharacter(endpoint, "?");
-//     const offset = (page - 1) * limit;
-
-//     const { count, rows } = await model.findAndCountAll({
-//         limit,
-//         offset,
-//     });
-
-//     const lastPage = Math.ceil(count / limit);
-
-//     const links = [];
-//     for (let i = 1; i <= lastPage; i++) {
-//         links.push({
-//             label: i.toString(),
-//             url: `${endpoint}?paginate=true&page=${i}&limit=${limit}`,
-//             active: i === page
-//         });
-//     }
-
-//     const pagination = {
-//         from: offset + 1,
-//         links: links,
-//         to: Math.min(offset + limit, count),
-//         currentPage: page,
-//         lastPage,
-//         currentPageUrl,
-//         total: count,
-//         perPage: limit,
-//         hasNextPage: page < lastPage,
-//         hasPreviousPage: page > 1,
-//         nextPageUrl: page < lastPage ? `${endpoint}?paginate=true&page=${page + 1}&limit=${limit}` : null,
-//         previousPageUrl: page > 1 ? `${endpoint}?paginate=true&page=${page - 1}&limit=${limit}` : null,
-//         firstPageUrl: `${endpoint}?paginate=true&page=1&limit=${limit}`,
-//         lastPageUrl: `${endpoint}?paginate=true&page=${lastPage}&limit=${limit}`,
-//     };
-
-//     return {
-//         pagination,
-//         data: rows
-//     };
-// };
-
-// const removeAfterCharacter = (str, char) => {
-//     return str.split(char)[0];
-// };
-
-// module.exports = paginateModel;
-
+import { Like, ObjectLiteral, Repository } from 'typeorm';
 
 interface PaginationLink {
     label: string;
@@ -78,19 +28,23 @@ interface PaginateModelResult<T> {
     data: T[];
 }
 
-const paginateModel = async <T>(
-    model: { findAndCountAll: (options: { limit: number; offset: number }) => Promise<{ count: number; rows: T[] }> },
-    page: number = 1,
-    limit: number = 10,
-    endpoint: string = ''
+export const paginateModel = async <T extends ObjectLiteral>(
+    repository: Repository<T>,
+    req: any,
+    options: any = {}
 ): Promise<PaginateModelResult<T>> => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 5;
+    let endpoint = req.originalUrl;
     const currentPageUrl = endpoint;
+
     endpoint = removeAfterCharacter(endpoint, "?");
     const offset = (page - 1) * limit;
 
-    const { count, rows } = await model.findAndCountAll({
-        limit,
-        offset,
+    const [rows, count] = await repository.findAndCount({
+        skip: offset,
+        take: limit,
+        ...options
     });
 
     const lastPage = Math.ceil(count / limit);
@@ -130,5 +84,3 @@ const paginateModel = async <T>(
 const removeAfterCharacter = (str: string, char: string): string => {
     return str.split(char)[0];
 };
-
-export default paginateModel;

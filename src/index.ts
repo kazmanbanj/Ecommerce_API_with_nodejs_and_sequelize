@@ -7,13 +7,13 @@ import Response from './domain/response';
 import HttpStatus from './util/http-status';
 import logger from './util/logger';
 import productRoutes from './routes/product.route';
-import sequelize from './config/mysql.config';
-import Product from './models/product';
-import User from './models/user';
 import authRoutes from './routes/auth.route';
+import db from './config/database.config';
+import userRoutes from './routes/user.route';
+import cartRoutes from './routes/cart.route';
 
 dotenv.config();
-const PORT = process.env.DB_PORT || 3000;
+const PORT = process.env.APP_PORT || 3000;
 
 const app = express();
 
@@ -26,13 +26,15 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 
-app.use('/admin', productRoutes);
-app.use('/auth', authRoutes);
+app.use('/api/v1/admin', productRoutes);
+app.use('/api/v1/carts', cartRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', userRoutes);
 
 app.get('/', (req, res) => res.send(
     new Response(
         HttpStatus.OK.code,
-        'Patient API, v1.0.0 - All systems go'
+        'Records API, v1.0.0 - All systems good to go'
     )
 ));
 app.all('*', (req, res) => res.status(HttpStatus.NOT_FOUND.code).send(
@@ -41,23 +43,17 @@ app.all('*', (req, res) => res.status(HttpStatus.NOT_FOUND.code).send(
         'Route doesn\'t exists on the server'
     )
 ));
+// app.use((req, res, next) => {
+//     const user = User.findOne({ where: { id: req.userId } });
+// });
 app.use(bodyParser.json());
 
-// relationships
-Product.belongsTo(User, {
-    constraints: true,
-    onDelete: 'CASCADE'
-});
-User.hasMany(Product);
-
-
-sequelize
-    // .sync({force: true})
-    .sync()
-    .then(result => {
-        // logger.info(result);
-        app.listen(PORT, () => {
-            logger.info(`Server is running on port ${ip.address()}:${PORT}`);
-        });
-    })
-    .catch(err => logger.info(err));
+db
+.initialize()
+.then(result => {
+    // logger.info(result);
+    app.listen(PORT, () => {
+        logger.info(`Server is running on port ${ip.address()}:${PORT}`);
+    });
+})
+.catch(err => logger.error(err));
