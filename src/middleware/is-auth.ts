@@ -3,8 +3,7 @@ import jwt from 'jsonwebtoken';
 import logger from '../util/logger'
 import HttpStatus from '../util/http-status';
 import ResponseModel from '../domain/response';
-import { where } from 'sequelize';
-import User from '../models/user';
+import User from '../entities/user.entity';
 
 declare global {
     namespace Express {
@@ -59,7 +58,8 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
         ));
     }
 
-    const user = await User.findOne({ where: { id: decodedToken.userId } });
+    const loggedInUserId: any = decodedToken.userId;
+    const user = await User.findOne({ where: { id: loggedInUserId } });
     if (!user) {
         return res.status(HttpStatus.UNAUTHORIZED.code)
         .send(new ResponseModel(

@@ -1,8 +1,8 @@
 import express from 'express';
-import { signup, login, profile } from '../controller/auth.controller';
 import { check, ValidationChain} from 'express-validator';
-import User from '../models/user';
+import { signup, login, profile } from '../controller/auth.controller';
 import authMiddleware from '../middleware/is-auth'
+import User from '../entities/user.entity';
 
 const authRoutes = express.Router();
 

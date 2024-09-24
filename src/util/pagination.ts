@@ -1,3 +1,5 @@
+import { Like, ObjectLiteral, Repository } from 'typeorm';
+
 interface PaginationLink {
     label: string;
     url: string;
@@ -26,21 +28,23 @@ interface PaginateModelResult<T> {
     data: T[];
 }
 
-const paginateModel = async <T>(
-    model: { findAndCountAll: (options: any) => Promise<{ count: number; rows: T[] }> },
-    page: number = 1,
-    limit: number = 10,
-    endpoint: string = '',
-    options: any = {} // New options parameter
+export const paginateModel = async <T extends ObjectLiteral>(
+    repository: Repository<T>,
+    req: any,
+    options: any = {}
 ): Promise<PaginateModelResult<T>> => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 5;
+    let endpoint = req.originalUrl;
     const currentPageUrl = endpoint;
+
     endpoint = removeAfterCharacter(endpoint, "?");
     const offset = (page - 1) * limit;
 
-    const { count, rows } = await model.findAndCountAll({
-        limit,
-        offset,
-        ...options // Spread the options here
+    const [rows, count] = await repository.findAndCount({
+        skip: offset,
+        take: limit,
+        ...options
     });
 
     const lastPage = Math.ceil(count / limit);
@@ -80,5 +84,3 @@ const paginateModel = async <T>(
 const removeAfterCharacter = (str: string, char: string): string => {
     return str.split(char)[0];
 };
-
-export default paginateModel;

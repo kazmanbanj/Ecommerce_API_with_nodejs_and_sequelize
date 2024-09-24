@@ -1,16 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import ResponseModel from '../domain/response';
 import logger from '../util/logger';
-import User from '../models/user';
-import Product from '../models/product';
 import HttpStatus from '../util/http-status';
 import { validationResult } from 'express-validator';
-import paginateModel from '../util/pagination';
+import { paginateModel } from '../util/pagination';
 import { errorsForRequest } from '../util/errors';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-
-User.associate({ Product });
+import User from '../entities/user.entity';
+import { createUser } from '../services/user.service';
+import { getToken } from '../services/auth.service';
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
     logger.info(`${req.method} ${req.originalUrl}, creating user...`);
@@ -20,10 +18,8 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
         return errorsForRequest(res, errors);
     }
 
-    const { firstName, lastName, email, password, phone } = req.body;
     try {
-        const hashedPassword = await bcrypt.hash(password, 12);
-        const result = await User.create({ firstName, lastName, email, password: hashedPassword, phone });
+        const result = await createUser(req);
         logger.info(result);
         res.status(HttpStatus.CREATED.code)
             .send(new ResponseModel(
@@ -69,14 +65,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
                     `Invalid credentials`
                 ));
             } else {
-                const token = await jwt.sign(
-                    {
-                        email: user.email,
-                        userId: user.id.toString()
-                    },
-                    process.env.JWT_SECRET as string,
-                    { expiresIn: process.env.TOKEN_EXPIRES_IN as string }
-                );
+                const token = await getToken(user);
 
                 res.status(HttpStatus.OK.code)
                 .send(new ResponseModel(
@@ -100,9 +89,10 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 };
 
+
 export const profile = async (req: Request, res: Response, next: NextFunction) => {
     logger.info(`${req.method} ${req.originalUrl}, fetching user profile...`);
-    const userId = req.userId
+    const userId = Number(req.userId);
 
     try {
         const user = await User.findOne({ where: { id: userId } });
