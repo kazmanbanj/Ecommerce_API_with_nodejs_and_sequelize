@@ -7,7 +7,8 @@ import { validationResult } from 'express-validator';
 import { paginateModel } from '../util/pagination';
 import { errorsForRequest } from '../util/errors';
 import { fetchAllUsers, fetchOneUser, removeUser, updateOneUser } from '../services/user.service';
-import { getRepository, Like } from 'typeorm';
+import { Like } from 'typeorm';
+import db from '../config/database.config';
 
 
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
@@ -41,7 +42,7 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction) 
 
     if (paginate === 'true') {
         try {
-            const products = await paginateModel(getRepository(User), req, queryOptions);
+            const products = await paginateModel(db.getRepository(User), req, queryOptions);
             res.status(HttpStatus.OK.code)
                 .send(new ResponseModel(
                     HttpStatus.OK.code,

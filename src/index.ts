@@ -10,9 +10,10 @@ import productRoutes from './routes/product.route';
 import authRoutes from './routes/auth.route';
 import db from './config/database.config';
 import userRoutes from './routes/user.route';
+import cartRoutes from './routes/cart.route';
 
 dotenv.config();
-const PORT = process.env.DB_PORT || 3000;
+const PORT = process.env.APP_PORT || 3000;
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 app.use('/api/v1/admin', productRoutes);
+app.use('/api/v1/carts', cartRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 
@@ -47,6 +49,7 @@ app.all('*', (req, res) => res.status(HttpStatus.NOT_FOUND.code).send(
 app.use(bodyParser.json());
 
 db
+.initialize()
 .then(result => {
     // logger.info(result);
     app.listen(PORT, () => {

@@ -3,11 +3,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-var mailerconfig = require('../config/mailer.config.json');
-
 // Create a transporter object using SMTP transport
 var transporter = nodemailer.createTransport({
-    ...mailerconfig
+    host: process.env.MAIL_HOST as string,
+    port: parseInt(process.env.MAIL_PORT as string, 10),
+    auth: {
+        user: process.env.MAIL_USERNAME as string,
+        pass: process.env.MAIL_PASSWORD as string,
+    },
 });
 
 // Function to send email

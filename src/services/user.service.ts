@@ -1,8 +1,9 @@
 import bcrypt from 'bcryptjs';
 import User from '../entities/user.entity';
 import { Request, Response, NextFunction } from 'express';
-import { Like, getRepository } from 'typeorm';
+import { Like } from 'typeorm';
 import sendSignupEmail from '../mail/mailer';
+import db from '../config/database.config';
 
 export const createUser = async (req: Request) => {
 
@@ -17,7 +18,7 @@ export const createUser = async (req: Request) => {
 export const fetchAllUsers = async (req: Request, options: any) => {
 
     const { search } = req.query;
-    const userRepository = getRepository(User);
+    const userRepository = db.getRepository(User);
     let queryOptions = { ...options };
 
     if (search) {

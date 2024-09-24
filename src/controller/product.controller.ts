@@ -7,7 +7,8 @@ import { validationResult } from 'express-validator';
 import { paginateModel } from '../util/pagination';
 import { errorsForRequest } from '../util/errors';
 import { createOneProduct, fetchOneProduct, updateOneProduct } from '../services/product.service';
-import { getRepository, Like, DataSource } from 'typeorm';
+import { Like } from 'typeorm';
+import db from '../config/database.config';
 
 
 export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
@@ -70,7 +71,7 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
 
     try {
         if (paginate === 'true') {
-            const products = await paginateModel(getRepository(Product), req, queryOptions);
+            const products = await paginateModel(db.getRepository(Product), req, queryOptions);
             res.status(HttpStatus.OK.code)
                 .send(new ResponseModel(
                     HttpStatus.OK.code,

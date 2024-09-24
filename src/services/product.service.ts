@@ -1,7 +1,15 @@
 import User from '../entities/user.entity';
 import { Request, Response, NextFunction } from 'express';
 import Product from '../entities/product.entity';
+import { In } from 'typeorm';
+import Cart from '../entities/cart.entity';
+import db from '../config/database.config';
+import log from '../util/logger';
 
+interface ValidationResult {
+    isValid: boolean;
+    invalidIds: number[];
+}
 
 export const createOneProduct = async (req: Request) => {
     const userId: any = req.userId;
@@ -39,4 +47,35 @@ export const updateOneProduct = async (req: Request, product: Product) => {
     await product.save();
 
     return product;
+};
+
+export const validateProductIds = async (productIds: number[]): Promise<ValidationResult> => {
+    const productRepository = db.getRepository(Product);
+    const products = await productRepository.findBy({ id: In(productIds) });
+    const existingIds = products.map(product => product.id);
+    const invalidIds = productIds.filter(id => !existingIds.includes(id));
+
+    return {
+        isValid: invalidIds.length === 0,
+        invalidIds,
+    };
+}
+
+export const createOneCart = async (req: Request) => {
+    const userId: any = Number(req.userId);
+    const productIds: any = Number(req.body.productIds);
+    log.info(req);
+    const cartRepository = db.getRepository(Cart);
+    const userRepository = db.getRepository(User);
+    const user = await userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    const cart = new Cart();
+    cart.user = user; // Associate the cart with the user
+
+    // Save the cart
+    return await cartRepository.save(cart);
 };
