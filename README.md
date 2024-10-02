@@ -1,1 +1,1 @@
-# Ecommerce_API_with_nodejs_and_sequelize
+# Ecommerce_API_with_nodejs_and_typeorm
