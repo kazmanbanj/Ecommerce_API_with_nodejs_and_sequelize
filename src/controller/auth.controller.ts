@@ -3,7 +3,6 @@ import ResponseModel from '../domain/response';
 import logger from '../util/logger';
 import HttpStatus from '../util/http-status';
 import { validationResult } from 'express-validator';
-import { paginateModel } from '../util/pagination';
 import { errorsForRequest } from '../util/errors';
 import bcrypt from 'bcryptjs';
 import User from '../entities/user.entity';
