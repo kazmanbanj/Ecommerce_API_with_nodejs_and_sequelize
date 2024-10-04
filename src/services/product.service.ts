@@ -63,8 +63,8 @@ export const validateProductIds = async (productIds: number[]): Promise<Validati
 
 export const createOneCart = async (req: Request) => {
     const userId: any = Number(req.userId);
-    const productIds: any = Number(req.body.productIds);
-    log.info(req);
+    const { productIds } = req.body;
+    log.info(productIds);
     const cartRepository = db.getRepository(Cart);
     const userRepository = db.getRepository(User);
     const user = await userRepository.findOne({ where: { id: userId } });
