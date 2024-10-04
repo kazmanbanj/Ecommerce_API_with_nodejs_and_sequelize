@@ -5,13 +5,13 @@
   "main": "src/index.ts",
   "scripts": {
     "start:dev": "NODE_ENV=dev nodemon src/index.ts",
+    "test": "mocha",
     "start:prod": "NODE_ENV=prod node src/index.ts"
   },
   "author": "Kazeem",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.3",
     "class-transformer": "^0.5.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -32,10 +32,12 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/chai": "^5.0.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/ip": "^1.1.3",
     "@types/jsonwebtoken": "^9.0.7",
+    "@types/mocha": "^10.0.8",
     "@types/node": "^22.5.5",
     "@types/nodemailer": "^6.4.16",
     "nodemon": "^3.1.4"

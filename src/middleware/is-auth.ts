@@ -8,14 +8,13 @@ import User from '../entities/user.entity';
 declare global {
     namespace Express {
         interface Request {
-            userId?: string; // Optional userId property
+            userId?: string;
         }
     }
 }
 
-// Define a type for the decoded token
 interface DecodedToken {
-    userId: string; // Ensure this matches what you're encoding
+    userId: string;
 }
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {

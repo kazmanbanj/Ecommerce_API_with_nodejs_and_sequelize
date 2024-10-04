@@ -1,6 +1,5 @@
 import express from 'express';
 import ip from 'ip';
-import bodyParser from 'body-parser';
 import dotenv from "dotenv";
 import cors from "cors";
 import Response from './domain/response';
@@ -43,10 +42,6 @@ app.all('*', (req, res) => res.status(HttpStatus.NOT_FOUND.code).send(
         'Route doesn\'t exists on the server'
     )
 ));
-// app.use((req, res, next) => {
-//     const user = User.findOne({ where: { id: req.userId } });
-// });
-app.use(bodyParser.json());
 
 db
 .initialize()

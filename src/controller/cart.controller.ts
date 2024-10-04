@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import ResponseModel from '../domain/response';
 import logger from '../util/logger';
-import Product from '../entities/product.entity';
 import HttpStatus from '../util/http-status';
 import { validationResult } from 'express-validator';
 import { paginateModel } from '../util/pagination';

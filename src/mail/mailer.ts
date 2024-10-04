@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Create a transporter object using SMTP transport
 var transporter = nodemailer.createTransport({
     host: process.env.MAIL_HOST as string,
     port: parseInt(process.env.MAIL_PORT as string, 10),
